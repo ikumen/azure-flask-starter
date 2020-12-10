@@ -1,3 +1,61 @@
+# Udacity ND081 Article CMS Project Refactor
+
+
+[Jump down to original README.md](#article-cms-flaskwebproject)
+
+## Tasks
+
+- [x] [document a project setup](#project-setup)
+- [ ] complete original requirements ([see README.md below](#article-cms-flaskwebproject))
+- [ ] separate development vs production environment
+- [ ] add vanilla SQL&mdash;SQLAlchemy (like most ORM) is awesome, but at some point you're gonna need to hand craft some SQL queries because you can't get the ORM to work it's magic
+- [ ] add additional OAuth providers
+
+## Project Setup
+
+I'm still learning Python&mdash;so feel free to correct/point me in the direction to becoming more [Pythonic](https://www.google.com/search?client=firefox-b-1-d&q=pythonic). 
+
+You'll need the following tools
+
+- [pyenv](https://github.com/pyenv/pyenv) - At some point, you'll may need to have multiple versions of Python running. `pyenv` helps you manage and switch between versions without really messing up your environment
+- [virtualenv](https://virtualenv.pypa.io/en/latest/) (for Python 2 users), otherwise Python 3 (as of 3.3) has virtual environment support built in. Every project has dependencies, many projects will have overlapping dependencies&mdash;with different versions. You use "virtual" environments to isolate each projects dependencies from each other. 
+- [pip](https://pip.pypa.io/en/stable/) is the tool for installing dependencies&mdash;convention is to store the dependencies in a `requirements.txt` at the root of your project.
+
+For every Python project, I do the following to set up my development environment. Make sure you're at your project root directory.
+
+1. determine the Python version I'm using and switch my shell to it via [pyenv](https://github.com/pyenv/pyenv) or add a `.python-version` at the project root for `pyenv` to pick up
+```bash
+# only applies to current shell
+pyenv shell 3.7.1
+# applies to current directory and sub directories (preferred method)
+echo "3.8.3" > .python-version
+```
+2. initialize a virtual environment (I prefer the hidden directory since you don't really need to do any work inside it)
+```bash
+# if you're using Python 2
+virtualenv .venv
+# and Python 3 version
+python -m venv .venv
+
+# .. don't forget to activate it
+. .venv/bin/activate
+# your prompt will change to display the virtual environment
+(.venv)
+```
+3. finally, I install the dependencies&mdash;make sure you're in your virtual environment by looking for the `(.venv)` at the start of your prompt
+```bash
+# if it's a project with an existing requirements.txt
+(.venv) pip install -r requirements.txt
+
+# as you add more dependencies
+(.venv) pip install flask
+# make sure to update your requirements.txt, note this method will clobber the existing requirements
+(.venv) pip freeze > requirements.txt
+```
+4. make sure you have a [Python specific](https://github.com/github/gitignore/blob/master/Python.gitignore) [`.gitignore`](https://github.com/github/gitignore) at your project
+
+------
+
 # Article CMS (FlaskWebProject)
 
 This project is a Python web application built using Flask. The user can log in and out and create/edit articles. An article consists of a title, author, and body of text stored in an Azure SQL Server along with an image that is stored in Azure Blob Storage. You will also implement OAuth2 with Sign in with Microsoft using the `msal` library, along with app logging.
