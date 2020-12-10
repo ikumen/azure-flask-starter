@@ -136,3 +136,4 @@ yarn.lock
 frontend/public/static/bundle.*
 sqlite.db
 .vscode
+/flask_session/

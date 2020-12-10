@@ -6,14 +6,19 @@
 ## Tasks
 
 - [x] [document a project setup](#project-setup)
-- [ ] complete original requirements ([see README.md below](#article-cms-flaskwebproject))
+- [x] complete original requirements ([see README.md below](#article-cms-flaskwebproject))
 - [ ] separate development vs production environment
 - [ ] add vanilla SQL&mdash;SQLAlchemy (like most ORM) is awesome, but at some point you're gonna need to hand craft some SQL queries because you can't get the ORM to work it's magic
+- [ ] separate backend vs frontend
+  - [ ] backend will serve API
+  - [ ] frontend will consume the API
 - [ ] add additional OAuth providers
+- [ ] add SQL migration (at least document it)
+- [ ] add tests (at least some examples)
 
 ## Project Setup
 
-I'm still learning Python&mdash;so feel free to correct/point me in the direction to becoming more [Pythonic](https://www.google.com/search?client=firefox-b-1-d&q=pythonic). 
+This is specifically about setting up for a Python project. Note, I'm still learning Python&mdash;so feel free to correct/point me in the direction to becoming more [Pythonic](https://www.google.com/search?client=firefox-b-1-d&q=pythonic). 
 
 You'll need the following tools
 
@@ -21,16 +26,16 @@ You'll need the following tools
 - [virtualenv](https://virtualenv.pypa.io/en/latest/) (for Python 2 users), otherwise Python 3 (as of 3.3) has virtual environment support built in. Every project has dependencies, many projects will have overlapping dependencies&mdash;with different versions. You use "virtual" environments to isolate each projects dependencies from each other. 
 - [pip](https://pip.pypa.io/en/stable/) is the tool for installing dependencies&mdash;convention is to store the dependencies in a `requirements.txt` at the root of your project.
 
-For every Python project, I do the following to set up my development environment. Make sure you're at your project root directory.
+For every Python project, I do the following to set up my development environment. Make sure you're at the project root directory.
 
-1. determine the Python version I'm using and switch my shell to it via [pyenv](https://github.com/pyenv/pyenv) or add a `.python-version` at the project root for `pyenv` to pick up
+Determine the Python version I'm using and switch my shell to it via [pyenv](https://github.com/pyenv/pyenv) or add a `.python-version` at the project root for `pyenv` to pick up
 ```bash
 # only applies to current shell
 pyenv shell 3.7.1
 # applies to current directory and sub directories (preferred method)
 echo "3.8.3" > .python-version
 ```
-2. initialize a virtual environment (I prefer the hidden directory since you don't really need to do any work inside it)
+Initialize a virtual environment (I prefer the hidden directory since you don't really need to do any work inside the `.venv` directory)
 ```bash
 # if you're using Python 2
 virtualenv .venv
@@ -42,17 +47,49 @@ python -m venv .venv
 # your prompt will change to display the virtual environment
 (.venv)
 ```
-3. finally, I install the dependencies&mdash;make sure you're in your virtual environment by looking for the `(.venv)` at the start of your prompt
+Next, install the dependencies&mdash;make sure you're in your virtual environment by looking for the `(.venv)` at the start of your prompt
 ```bash
 # if it's a project with an existing requirements.txt
 (.venv) pip install -r requirements.txt
 
 # as you add more dependencies
 (.venv) pip install flask
-# make sure to update your requirements.txt, note this method will clobber the existing requirements
+# make sure to update your requirements.txt, note this method will clobber the existing requirements file
 (.venv) pip freeze > requirements.txt
 ```
-4. make sure you have a [Python specific](https://github.com/github/gitignore/blob/master/Python.gitignore) [`.gitignore`](https://github.com/github/gitignore) at your project
+Finally, make sure you have a [Python specific](https://github.com/github/gitignore/blob/master/Python.gitignore) [`.gitignore`](https://github.com/github/gitignore) for your project.
+
+
+## Completing Original Project 
+
+I finished the [project rubric/requirements](https://review.udacity.com/#!/rubrics/2850/view), and it was pretty straight forward&mdash;your views/results may vary depending on your environment and prior development experience. The course was pretty light in terms of app development, more focused on introducing Azure's services and integration with our project app. Overall I thought it was pretty good, but did have the following issues.
+
+- I couldn't get the app to connect to SQL database using the recommended approaches (for Mac OSX). I ended up hard coding the driver path just to get it working. 
+```bash
+# find where odbcinst.ini is installed
+odbcinst -j
+
+> unixODBC 2.3.9
+> DRIVERS............: /usr/local/etc/odbcinst.ini
+> SYSTEM DATA SOURCES: /usr/local/etc/odbc.ini
+> FILE DATA SOURCES..: /usr/local/etc/
+...
+
+# open odbcinst.ini, and locate drive location
+less /usr/local/etc/odbcinst.ini
+
+> [ODBC Driver 17 for SQL Server]
+> Description=Microsoft ODBC Driver 17 for SQL Server
+> Driver=/usr/local/lib/libmsodbcsql.17.dylib
+> UsageCount=1
+
+# hardcode the driver location in our URI
+SQLALCHEMY_DATABASE_URI = 'mssql+pyodb....driver=/usr/local/lib/libmsodbcsql.17.dylib'
+```
+_source: https://stackoverflow.com/questions/44527452/cant-open-lib-odbc-driver-13-for-sql-server-sym-linking-issue_
+* using `https` with localhost was a pain, Microsoft Edge wouldn't open it, and Firefox kept prompting me to accept the risk&mdash;will investigate.
+
+
 
 ------
 
