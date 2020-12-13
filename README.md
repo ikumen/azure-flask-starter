@@ -1,13 +1,11 @@
 # Udacity ND081 Article CMS Project Refactor
 
 
-[Jump down to original README.md](#article-cms-flaskwebproject)
-
 ## Tasks
 
-- [x] [document a project setup](#project-setup)
-- [x] complete original requirements ([see README.md below](#article-cms-flaskwebproject))
-- [ ] separate development vs production environment
+- [x] [project setup](#project-setup)
+- [x] [complete original requirements](#completing-original-project) ([see original README.md below](#article-cms-flaskwebproject))
+- [ ] isolate development/production configurations
 - [ ] add vanilla SQL&mdash;SQLAlchemy (like most ORM) is awesome, but at some point you're gonna need to hand craft some SQL queries because you can't get the ORM to work it's magic
 - [ ] separate backend vs frontend
   - [ ] backend will serve API
@@ -18,24 +16,29 @@
 
 ## Project Setup
 
-This is specifically about setting up for a Python project. Note, I'm still learning Python&mdash;so feel free to correct/point me in the direction to becoming more [Pythonic](https://www.google.com/search?client=firefox-b-1-d&q=pythonic). 
+### Python
+
+I'm still learning Python&mdash;so feel free to correct/point me in the direction to becoming more [Pythonic](https://www.google.com/search?client=firefox-b-1-d&q=pythonic). 
 
 You'll need the following tools
 
-- [pyenv](https://github.com/pyenv/pyenv) - At some point, you'll may need to have multiple versions of Python running. `pyenv` helps you manage and switch between versions without really messing up your environment
+- [pyenv](https://github.com/pyenv/pyenv), at some point you'll may need to have multiple versions of Python running. `pyenv` helps you manage and switch between versions without really messing up your environment
 - [virtualenv](https://virtualenv.pypa.io/en/latest/) (for Python 2 users), otherwise Python 3 (as of 3.3) has virtual environment support built in. Every project has dependencies, many projects will have overlapping dependencies&mdash;with different versions. You use "virtual" environments to isolate each projects dependencies from each other. 
 - [pip](https://pip.pypa.io/en/stable/) is the tool for installing dependencies&mdash;convention is to store the dependencies in a `requirements.txt` at the root of your project.
 
-For every Python project, I do the following to set up my development environment. Make sure you're at the project root directory.
+For most Python projects, I use the following process to set up my development environment. Make sure you're at the project root directory.
 
-Determine the Python version I'm using and switch my shell to it via [pyenv](https://github.com/pyenv/pyenv) or add a `.python-version` at the project root for `pyenv` to pick up
+Determine the Python version you will use and switch to it via [pyenv](https://github.com/pyenv/pyenv) `shell` or add a `.python-version` at the project root for `pyenv` to pick up
+
 ```bash
 # only applies to current shell
 pyenv shell 3.7.1
 # applies to current directory and sub directories (preferred method)
 echo "3.8.3" > .python-version
 ```
-Initialize a virtual environment (I prefer the hidden directory since you don't really need to do any work inside the `.venv` directory)
+
+Initialize a virtual environment (I prefer to keep this directory hidden since it's managed by virtualenv).
+
 ```bash
 # if you're using Python 2
 virtualenv .venv
@@ -43,11 +46,13 @@ virtualenv .venv
 python -m venv .venv
 
 # .. don't forget to activate it
-. .venv/bin/activate
+source .venv/bin/activate
 # your prompt will change to display the virtual environment
 (.venv)
 ```
-Next, install the dependencies&mdash;make sure you're in your virtual environment by looking for the `(.venv)` at the start of your prompt
+
+Next, install the dependencies&mdash;make sure you're in the virtual environment by looking for the `(.venv)` at the start of your prompt
+
 ```bash
 # if it's a project with an existing requirements.txt
 (.venv) pip install -r requirements.txt
@@ -57,12 +62,17 @@ Next, install the dependencies&mdash;make sure you're in your virtual environmen
 # make sure to update your requirements.txt, note this method will clobber the existing requirements file
 (.venv) pip freeze > requirements.txt
 ```
+
 Finally, make sure you have a [Python specific](https://github.com/github/gitignore/blob/master/Python.gitignore) [`.gitignore`](https://github.com/github/gitignore) for your project.
 
+### Emulators / Docker
+
+
+TODO
 
 ## Completing Original Project 
 
-I finished the [project rubric/requirements](https://review.udacity.com/#!/rubrics/2850/view), and it was pretty straight forward&mdash;your views/results may vary depending on your environment and prior development experience. The course was pretty light in terms of app development, more focused on introducing Azure's services and integration with our project app. Overall I thought it was pretty good, but did have the following issues.
+I finished the [project rubric/requirements](https://review.udacity.com/#!/rubrics/2850/view), and thought it was pretty good. The course was light in terms of app development&mdash;the focus was on introducing Azure's services and integrating it with the project app. I did have the following issues.
 
 - I couldn't get the app to connect to SQL database using the recommended approaches (for Mac OSX). I ended up hard coding the driver path just to get it working. 
 ```bash
@@ -83,81 +93,122 @@ less /usr/local/etc/odbcinst.ini
 > Driver=/usr/local/lib/libmsodbcsql.17.dylib
 > UsageCount=1
 
-# hardcode the driver location in our URI
+# hardcode the driver location in the URI
 SQLALCHEMY_DATABASE_URI = 'mssql+pyodb....driver=/usr/local/lib/libmsodbcsql.17.dylib'
 ```
 _source: https://stackoverflow.com/questions/44527452/cant-open-lib-odbc-driver-13-for-sql-server-sym-linking-issue_
-* using `https` with localhost was a pain, Microsoft Edge wouldn't open it, and Firefox kept prompting me to accept the risk&mdash;will investigate.
+
+* using `https` with localhost was a pain, Microsoft Edge wouldn't open it, and Firefox kept prompting me to accept the risk.
+
+At this point, we have the completed project and a base for where the refactoring will start. I've tagged it in the repository for reference.
+
+## Isolate Development/Production Configurations
+
+I like localizing development as much as possible. I realize the course is mostly about developing applications for Azure, and the exercises are using quick and simple apps to teach a concept, but it's messy connecting to Azure during development and it's easy to mix up variables from two environments. 
+
+```python
+# config.py
+class Config:
+    # What if we forget to set `SECRET_KEY` in production
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'secret-key'
+    # ... but do remember to set BLOB_ACCOUNT
+    BLOB_ACCOUNT = os.environ.get('BLOB_ACCOUNT') or 'abczyz'
+    # it's not clear what's meant for production vs development
+    ...
+```
+
+In refactoring this app, I want to demonstrate an application structure and environment that I would use&mdash;maybe you have some thing better, I'd appreciate your suggestions/comments. 
+
+Ideally, deployed code should be the same across all environments, while configurations are environment specific&mdash;switching environments should not require rebuilding the application. Our goal is something like the [twelve-factor](https://12factor.net/) method&mdash;keep all configs as [environment variables](https://en.wikipedia.org/wiki/Environment_variable) and completely agnostic of their environment&mdash;but it's hard managing configrations only in environment variables so we'll cheat :-). 
+
+I modified `config.py` to explicitly load configurations from environment variables unless explicitly set&mdash;this happens for all environments outside of `development`. For `development`, configurations will be loaded from environment variables as well, but can also have a default value if not found as an environment variable. 
+
+```python
+# config.py
+env = os.environ.get('FLASK_ENV', 'development')
+is_development = env == 'development'
+
+def envvar_with_devopt(key, opt=None):
+    if is_development:
+        return os.environ.get(key, opt)
+    return os.environ.get(key)
 
 
+class Config:
+    # Each environment must set this attribute, 'development` can optionally 
+    # use `ch3ez!ts` if variable not set as environment variable.
+    SESSION_KEY = envvar_with_devopt('SECRET_KEY','ch3ez!ts')
+    # Explicitly set, same across environments
+    FLASK_SESSION_TYPE = 'filesystem'
+    ..
+```
 
-------
+We can control which environment we're in by passing [FLASK_ENV on startup](https://flask.palletsprojects.com/en/1.1.x/config/#environment-and-debug-features).
 
-# Article CMS (FlaskWebProject)
+```bash
+# We default FLASK_ENV to development, so you only 
+# need to explicitly set for other environments. 
+(.venv) FLASK_ENV=production python application.py
+```
 
-This project is a Python web application built using Flask. The user can log in and out and create/edit articles. An article consists of a title, author, and body of text stored in an Azure SQL Server along with an image that is stored in Azure Blob Storage. You will also implement OAuth2 with Sign in with Microsoft using the `msal` library, along with app logging.
+Another issue with the original `config.py` is the risk of exposing our secret keys/passwords if `config.py` was [accidentally checked in](https://qz.com/674520/companies-are-sharing-their-secret-access-codes-on-github-and-they-may-not-even-know-it/). For configurations that hold environment specific secrets/passwords, we simply set them using environment variables with no defaults, and either 1) set them as environment variables to be picked up or 2) load a special `local config` file, making sure not to check that file into source control.
 
-## Log In Credentials for FlaskWebProject
+```python
+# config.py
+class Config:
+    ...
+    # For secrets, simply load them from environment variables, no defaults
+    OAUTH_CLIENT_SECRET = os.environ.get('OAUTH_CLIENT_SECRET')
+    SQL_SERVER_PASSWORD = os.environ.get('SQL_SERVER_PASSWORD')
 
-- Username: admin
-- Password: pass
 
-Or, once the MS Login button is implemented, it will automatically log into the `admin` account.
+def init_app(app):
+    # We load the Config into Flask
+    app.config.from_object(Config)
+    # at this point, we can either set the missing configs above as environment vars
+    # or specify a file location that contains the missing configs using LOCAL_CFG.
+    app.config.from_envvar('LOCAL_CFG', silent=True)
+```
 
-## Project Instructions (For Student)
+For example, if we kept the `OAUTH_CLIENT_SECRET` and `SQL_SERVER_PASSWORD` in a file called `local.cfg`
 
-You are expected to do the following to complete this project:
-1. Create a Resource Group in Azure.
-2. Create an SQL Database in Azure that contains a user table, an article table, and data in each table (populated with the scripts provided in the SQL Scripts folder).
-    - Provide a screenshot of the populated tables as detailed further below.
-3. Create a Storage Container in Azure for `images` to be stored in a container.
-    - Provide a screenshot of the storage endpoint URL as detailed further below.
-4. Add functionality to the Sign In With Microsoft button. 
-    - This will require completing TODOs in `views.py` with the `msal` library, along with appropriate registration in Azure Active Directory.
-5. Choose to use either a VM or App Service to deploy the FlaskWebProject to Azure. Complete the analysis template in `WRITEUP.md` (or include in the README) to compare the two options, as well as detail your reasoning behind choosing one or the other. Once you have made your choice, go through with deployment.
-6. Add logging for whether users successfully or unsuccessfully logged in.
-    - This will require completing TODOs in `__init__.py`, as well as adding logging where desired in `views.py`.
-7. To prove that the application in on Azure and working, go to the URL of your deployed app, log in using the credentials in this README, click the Create button, and create an article with the following data:
-	- Title: "Hello World!"
-	- Author: "Jane Doe"
-	- Body: "My name is Jane Doe and this is my first article!"
-	- Upload an image of your choice. Must be either a .png or .jpg.
-   After saving, click back on the article you created and provide a screenshot proving that it was created successfully. Please also make sure the URL is present in the screenshot.
-8. Log into the Azure Portal, go to your Resource Group, and provide a screenshot including all of the resources that were created to complete this project. (see sample screenshot in "example_images" folder)
-9. Take a screenshot of the Redirect URIs entered for your registered app, related to the MS Login button.
-10. Take a screenshot of your logs (can be from the Log stream in Azure) showing logging from an attempt to sign in with an invalid login, as well as a valid login.
+```python
+# <project_root>/local.cfg
+OAUTH_CLIENT_SECRET = 'speakeasy'
+SQL_SERVER_PASSWORD = 'Tiger'
+```
 
-## example_images Folder
+We can have the app load it with.
 
-This folder contains sample screenshots that students are required to submit in order to prove they completed various tasks throughout the project.
+```bash
+LOCAL_CFG=../local.cfg python application.py
+```
 
-1. article-cms-solution.png is a screenshot from running the FlaskWebProject on Azure and prove that the student was able to create a new entry. The Title, Author, and Body fields must be populated to prove that the data is being retrieved from the Azure SQL Database while the image on the right proves that an image was uploaded and pulled from Azure Blob Storage.
-2. azure-portal-resource-group.png is a screenshot from the Azure Portal showing all of the contents of the Resource Group the student needs to create. The resource group must (at least) contain the following:
-	- Storage Account
-	- SQL Server
-	- SQL Database
-	- Resources related to deploying the app
-3. sql-storage-solution.png is a screenshot showing the created tables and one query of data from the initial scripts.
-4. blob-solution.png is a screenshot showing an example of blob endpoints for where images are sent for storage.
-5. uri-redirects-solution.png is a screenshot of the redirect URIs related to Microsoft authentication.
-6. log-solution.png is a screenshot showing one potential form of logging with an "Invalid login attempt" and "admin logged in successfully", taken from the app's Log stream. You can customize your log messages as you see fit for these situations.
+We would add an entry for `local.cfg` in our `.gitignore` so it doesn't accidentally get checked in, but we can also simply move it out of the project directory&mdash;maybe a central directory where we keep all our development secret config files.
 
-## Dependencies
+```bash
+LOCAL_CFG=/etc/app-secrets/projectxxx.cfg python application.py
+```
 
-1. A free Azure account
-2. A GitHub account
-3. Python 3.7 or later
-4. Visual Studio 2019 Community Edition (Free)
-5. The latest Azure CLI (helpful; not required - all actions can be done in the portal)
+Finally, we need to make sure that all configurations are set and fail fast if any are missing.
 
-All Python dependencies are stored in the requirements.txt file. To install them, using Visual Studio 2019 Community Edition:
-1. In the Solution Explorer, expand "Python Environments"
-2. Right click on "Python 3.7 (64-bit) (global default)" and select "Install from requirements.txt"
+```python
+# config.py
 
-## Troubleshooting
+def init_app(app):
+    # Load configs
+    app.config.from_object(Config)
+    # and any local secret configs
+    app.config.from_envvar('LOCAL_CFG', silent=True)
 
-- Mac users may need to install `unixodbc` as well as related drivers as shown below:
-    ```bash
-    brew install unixodbc
-    ```
-- Check [here](https://docs.microsoft.com/en-us/sql/connect/odbc/linux-mac/install-microsoft-odbc-driver-sql-server-macos?view=sql-server-ver15) to add SQL Server drivers for Mac.
+    # Check if any configurations are missing (e.g, None value)
+    # and fail fast.
+    missing_configs = []
+    for attr in Config.__dict__.keys():
+        if not attr.startswith('__') and app.config[attr] is None:
+            missing_configs.append(attr)
+    if missing_configs:
+        raise KeyError(f'Missing configurations: {missing_configs}')
+```
+
+
