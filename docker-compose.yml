@@ -1,0 +1,29 @@
+version: '3.8'
+
+services: 
+  mssqlserver:
+    build:
+      context: .
+      dockerfile: Dockerfile.sqlserver
+    ports: 
+      - "1433:1433"
+    environment: 
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${DB_PASSWORD:-saPassw0rd}
+      - DB_DATABASE=${DB_DATABASE:-localdb}
+    command: sh -c '
+      (sleep 20 &&
+      /opt/mssql-tools/bin/sqlcmd -v DB_DATABASE=$${DB_DATABASE} -S localhost -U SA -P $${SA_PASSWORD} -i /create-database.sql) &
+      /opt/mssql/bin/sqlservr'
+  
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.9.0
+    ports: 
+      - "10000:10000"
+      - "10001:10001"
+    volumes: 
+      - ".data/blob:/data"
+    
+
+    
+    
