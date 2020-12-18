@@ -1,3 +1,9 @@
 FROM mcr.microsoft.com/mssql/server:2017-latest
 
-COPY database/create-database.sql /
+SHELL [ "/bin/bash", "-c" ]
+
+RUN echo $'\n\
+IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = \'$(DB_DATABASE)\') \n\
+BEGIN \n\
+  CREATE DATABASE $(DB_DATABASE);\n\
+END;' > /create_database.sql
