@@ -2,12 +2,10 @@ import logging
 import os
 import uuid
 
-from azure.core.exceptions import ResourceNotFoundError
-from azure.storage.blob import BlobServiceClient, PublicAccess, BlobType, BlobProperties
+from azure.storage.blob import BlobServiceClient, PublicAccess
 from flask_sqlalchemy import SQLAlchemy
 
 log = logging.getLogger(__name__)
-
 
 class BlobStore:
     """Provides a simple interface to Azure's Blob Storage service and
@@ -45,7 +43,7 @@ class BlobStore:
         blob_client.delete_blob(delete_snapshots="include")
 
 
-
 db = SQLAlchemy()
 blob_store = BlobStore()
+
 

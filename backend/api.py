@@ -31,7 +31,6 @@ def delete_article(id):
     article_service.delete(id)
     return {}, 204 
 
-
 @bp.route('/users', methods=['get'])
 def list_users():
     users = [u.as_dict() for u in user_service.all()]
