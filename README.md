@@ -8,6 +8,10 @@ If you find yourself here, then I'm assuming your goal is to eventually release 
 
 The localized versions of the Azure services are functionally equivalent, not exact duplicates, but enough to simulate the backing services your application depends on. Thus allowing you to focus on developing the application, and less time provisioning and deprovisioning because you're worried about cost.
 
+* [Quick Start](#quick-start)
+* [Database Migrations](#database-migrations)
+* [Testing](#testing)
+
 
 ## Quick Start
 
@@ -45,3 +49,35 @@ python -m venv .venv
 
 _If you're unfamiliar with any of the steps above, take a look at this [short introduction to setting up a Python project](https://gist.github.com/ikumen/132b753cee9050de9e56aa3834e82aab)._
 
+## Database Migrations
+
+Database schema creation and migrations are all handled by [SQLAlchemy](https://www.sqlalchemy.org/) and [Alembic](https://alembic.sqlalchemy.org/en/latest/). We use SQLAlchemy to abstract away the [low level database driver](https://pypi.org/project/pyodbc/) and help map our database schema to our models. Alembic is the tool that detects model changes and migrates them to our database schema. The workflow goes something like this:
+
+1. initially we initialize the Alembic working directory `alembic`
+1. start on the application side, and design your models and their relationships
+1. when you're ready to test out the models against the database, use Alembic to detect the models, generate the schema
+1. then use Alembic to apply the schema to the database, start up your app and test
+1. repeat steps 2-4 as you develop and evolve your models, Alembic keeps track of all the changes your schema goes through as it evolves from the changes you make to your models.
+1. finally everything in the `alembic` folder gets checked into source control, anyone that checks out the project can automatically migrate their local database to our latest schema
+
+`manage.py` contains the hooks that tie your application models to Alembic, and exposes Alembic migration operations with a command line interface.
+
+```bash
+# This would normally be run just once at the start of the project
+# to initialize the Alembic working directory, where it keeps the 
+# migrations (see `alembic` folder).
+(.venv) python manage.py db init
+
+# After you make changes to your model, run this so Alembic detects the
+# changes and updates the database schema to reflect mirror your models.
+(.venv) python manage.py db migrate
+
+# Finally run this to apply those changes to the database.
+(.venv) python manage.py db upgrade
+```
+
+## Testing
+
+```bash
+(.venv) python -m unittest discover -p "*_tests.py"
+```

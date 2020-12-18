@@ -138,3 +138,6 @@ sqlite.db
 .vscode
 /flask_session/
 .data
+
+# For local configurations not meant to be checked in
+local.cfg
