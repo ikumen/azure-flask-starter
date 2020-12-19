@@ -1,6 +1,6 @@
 import logging
 
-from flask import Flask
+from flask import Flask, jsonify
 from backend import settings, api, services
 
 
@@ -36,6 +36,9 @@ def create_app():
     services.user_service.init_app(app)
 
     app.register_blueprint(api.bp)
+
+    app.errorhandler(500)(lambda e: (jsonify(dict(error="Sorry, it's not you it's us!")), 500))
+    app.errorhandler(404)(lambda e: (jsonify(dict(error="Doh")), 404))
     
     return app
 
