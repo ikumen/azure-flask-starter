@@ -17,6 +17,7 @@ The localized versions of the Azure services are functionally equivalent, not ex
 
 You should have: [Python 3.7 or later](https://www.python.org/downloads/), [pyenv](https://github.com/pyenv/pyenv), [Docker](https://docs.docker.com/get-docker/), and an IDE would be helpful ([Visual Studio Code is nice](https://code.visualstudio.com/)).
 
+### Start SQL Database and Blob Storage
 
 ```bash
 # Checkout the project and navigate to it
@@ -29,6 +30,7 @@ docker-compose up
 ...
 ```
 
+### Setup Python and Initialize Database Schema
 Open a second terminal and navigate to the project root.
 
 ```bash
@@ -40,14 +42,21 @@ python -m venv .venv
 . .venv/bin/activate
 (.venv) pip install -r requirements.txt
 
-# Initialize the database (e.g create tables)
-(.venv) python manage.py db head
+# Initialize the database schema (e.g create tables)
+(.venv) python manage.py db migrate
+(.venv) python manage.py db upgrade
+```
 
+### Start the application
+```bash
 # Start the application
 (.venv) python application.py
 ```
 
-_If you're unfamiliar with any of the steps above, take a look at this [short introduction to setting up a Python project](https://gist.github.com/ikumen/132b753cee9050de9e56aa3834e82aab)._
+Congratulations, you can now check out your application at http://localhost:5000
+
+
+_Note: If you're unfamiliar with any of the steps above, take a look at this [short introduction to setting up a Python project](https://gist.github.com/ikumen/132b753cee9050de9e56aa3834e82aab)._
 
 ## Database Migrations
 

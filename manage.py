@@ -1,5 +1,5 @@
 """
-python manage.py db init 
+python manage.py db init (run once to initialize alembic work directory)
 python manage.py db migrate
 python manage.py db upgrade
 """

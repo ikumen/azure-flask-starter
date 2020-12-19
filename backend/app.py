@@ -1,21 +1,8 @@
-import backend
-import os
-import importlib
-import pkgutil
 import logging
 
-from flask import Flask, Blueprint
+from flask import Flask
 from backend import settings, api, services
 
-
-def _register_blueprints(app, pkg_name, pkg_path):
-    """Register Blueprints for given package."""
-    for _, name, _ in pkgutil.iter_modules(pkg_path):
-        m = importlib.import_module('%s.%s' % (pkg_name, name))
-        for item in dir(m):
-            item = getattr(m, item)
-            if isinstance(item, Blueprint):
-                app.register_blueprint(item)
 
 def create_config_only_app():
     app = Flask(__name__)
@@ -49,7 +36,6 @@ def create_app():
     services.user_service.init_app(app)
 
     app.register_blueprint(api.bp)
-    #_register_blueprints(app, app_name, [os.path.dirname(__file__)])
     
     return app
 
