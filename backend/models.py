@@ -45,6 +45,7 @@ class Article(db.Model, ModelMixin):
     __tablename__ = 'articles'
 
     id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
     image_filename = db.Column(db.String(42))
     content = db.Column(db.String(None))
     created_at = db.Column(db.DateTime, index=True, default=datetime.utcnow)

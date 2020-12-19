@@ -42,6 +42,9 @@ class Service:
             setattr(model, k, v)
         return self._save(model)
 
+    def get(self, id):
+        return self._model_.query.get(id)
+
 
 class UserService(Service):
     """Encapsulates `User` model operations and any associated 
