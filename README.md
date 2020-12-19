@@ -80,7 +80,9 @@ curl -i localhost:5000/api/users
 > []
 
 # As expected, no users. Let's add a user
-curl -i localhost:5000/api/users -H "content-type: application/json" -d '{"name":"Daryl Zero"}'
+curl -i localhost:5000/api/users \
+-H "content-type: application/json" \
+-d '{"name":"Daryl Zero"}'
 
 > HTTP/1.0 400 BAD REQUEST
 > Content-Type: application/json
@@ -94,7 +96,9 @@ curl -i localhost:5000/api/users -H "content-type: application/json" -d '{"name"
 
 # Oops, we forgot email, we did get a nice error 
 # message. Let's try again.
-curl -i localhost:5000/api/users -H "content-type: application/json" -d '{"name":"Daryl Zero", "email": "daryl@acme.org"}'
+curl -i localhost:5000/api/users \
+-H "content-type: application/json" \
+-d '{"name":"Daryl Zero", "email": "daryl@acme.org"}'
 
 > HTTP/1.0 200 OK
 > Content-Type: application/json
@@ -109,7 +113,9 @@ curl -i localhost:5000/api/users -H "content-type: application/json" -d '{"name"
 > }
 
 # Awesome, let's add an article
-curl -i localhost:5000/api/articles -F title="Getting started with Azure and Flask" -F user_id=1 -F image=@/path/to/image.jpg
+curl -i localhost:5000/api/articles \
+-F title="Getting started with Azure and Flask" \
+-F user_id=1 -F image=@/path/to/image.jpg
 
 > HTTP/1.1 100 Continue
 > 
@@ -138,7 +144,8 @@ Next, let's verify our data is in the database and blob storage using `sqlcmd` a
 
 ```bash
 # First let's make sure our user was added to the database
-sqlcmd -S localhost -U SA -P saPassw0rd -d localdb -Q "select * from users" -Y 20
+sqlcmd -S localhost -U SA -P saPassw0rd -d localdb \
+-Q "select * from users" -Y 20
 
 > id          name                 email               
 > ----------- -------------------- --------------------
@@ -147,17 +154,21 @@ sqlcmd -S localhost -U SA -P saPassw0rd -d localdb -Q "select * from users" -Y 2
 > (1 row affected)
 
 # Cool, next check if the article is there
- sqlcmd -S localhost -U SA -P saPassw0rd -d localdb -Q "select * from articles" -y 4 -Y 40
+sqlcmd -S localhost -U SA -P saPassw0rd -d localdb \
+ -Q "select id, user_id, image_filename, title from articles" \
+ -y 4 -Y 40
 
-> id          image_filename                           cont created_at              user_id     title                                   
-> ----------- ---------------------------------------- ---- ----------------------- ----------- ----------------------------------------
->           1 02e30295-04bd-436b-b3ca-d0cc26b03cac.png NULL 2020-12-11 12:03:25.007          1 Getting started with Azure and Flask    
-> 
+> id  user_id  image_filename                           title                                   
+> --- -------- ---------------------------------------- --------------------------
+>   1        1 02e30295-04bd-436b-b3ca-d0cc26b03cac.png Getting started with Az..
+
 > (1 rows affected)
 
 
 # Finally, we'll check blob storage for our article image. It should have the same name as the `image_filename` field above
-az storage blob list -c articleassets --connection-string "AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;" --query "[].name"
+az storage blob list -c articleassets \
+--connection-string "AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;" \
+--query "[].name"
 
 > [
 >   "02e30295-04bd-436b-b3ca-d0cc26b03cac.png"
