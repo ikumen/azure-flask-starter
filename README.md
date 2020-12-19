@@ -47,16 +47,132 @@ python -m venv .venv
 (.venv) python manage.py db upgrade
 ```
 
+_Note: If you're unfamiliar with any of the steps above, take a look at this [short introduction to setting up a Python project](https://gist.github.com/ikumen/132b753cee9050de9e56aa3834e82aab)._
+
 ### Start the application
+The moment of truth, let's start our application. :pray:
 ```bash
 # Start the application
 (.venv) python application.py
+ ..
+ * Serving Flask app "backend.app" (lazy loading)
+ * Environment: development
+ * Debug mode: on
+ ...
 ```
 
-Congratulations, you can now check out your application at http://localhost:5000
+If all went well, you should see above output after running `python application.py`, congratulations :+1:. 
+
+### Verify the application is working
+
+Let's hit some of the endpoints to make sure everything is working, open up a separate terminal.
+
+```bash
+# Hit the users endpoint
+curl -i localhost:5000/api/users
+
+> HTTP/1.0 200 OK
+> Content-Type: application/json
+> Content-Length: 3
+> Server: Werkzeug/1.0.1 Python/3.8.3
+> ...
+>
+> []
+
+# As expected, no users. Let's add a user
+curl -i localhost:5000/api/users -H "content-type: application/json" -d '{"name":"Daryl Zero"}'
+
+> HTTP/1.0 400 BAD REQUEST
+> Content-Type: application/json
+> Content-Length: 60
+> Server: Werkzeug/1.0.1 Python/3.8.3
+> ...
+>
+> {
+>   "error": "Missing required params: ['email']"
+> }
+
+# Oops, we forgot email, we did get a nice error 
+# message. Let's try again.
+curl -i localhost:5000/api/users -H "content-type: application/json" -d '{"name":"Daryl Zero", "email": "daryl@acme.org"}'
+
+> HTTP/1.0 200 OK
+> Content-Type: application/json
+> Content-Length: 70
+> Server: Werkzeug/1.0.1 Python/3.8.3
+> ...
+> 
+> {
+>   "email": "daryl@acme.org", 
+>   "id": 1, 
+>   "name": "Daryl Zero"
+> }
+
+# Awesome, let's add an article
+curl -i localhost:5000/api/articles -F title="Getting started with Azure and Flask" -F user_id=1 -F image=@/path/to/image.jpg
+
+> HTTP/1.1 100 Continue
+> 
+> HTTP/1.0 200 OK
+> Content-Type: application/json
+> Content-Length: 219
+> Server: Werkzeug/1.0.1 Python/3.8.3
+> ...
+> 
+> {
+>   "content": null, 
+>   "created_at": "Sat, 11 Dec 2020 12:03:25 GMT", 
+>   "id": 1, 
+>   "image_filename": "02e30295-04bd-436b-b3ca-d0cc26b03cac.png", 
+>   "title": "Getting started with Azure and Flask", 
+>   "user_id": 1
+> }
+
+# Great, we were able to add an article for our user and 
+# the associated image was saved to our blob storage. 
+```
+
+### Verify the data was saved to SQL Server and Blob Storage
+
+Next, let's verify our data is in the database and blob storage using `sqlcmd` and the Azure cli `az`.
+
+```bash
+# First let's make sure our user was added to the database
+sqlcmd -S localhost -U SA -P saPassw0rd -d localdb -Q "select * from users" -Y 20
+
+> id          name                 email               
+> ----------- -------------------- --------------------
+>          1 Daryl Zero           daryl@acme.org    
+>
+> (1 row affected)
+
+# Cool, next check if the article is there
+ sqlcmd -S localhost -U SA -P saPassw0rd -d localdb -Q "select * from articles" -y 4 -Y 40
+
+> id          image_filename                           cont created_at              user_id     title                                   
+> ----------- ---------------------------------------- ---- ----------------------- ----------- ----------------------------------------
+>           1 02e30295-04bd-436b-b3ca-d0cc26b03cac.png NULL 2020-12-11 12:03:25.007          1 Getting started with Azure and Flask    
+> 
+> (1 rows affected)
 
 
-_Note: If you're unfamiliar with any of the steps above, take a look at this [short introduction to setting up a Python project](https://gist.github.com/ikumen/132b753cee9050de9e56aa3834e82aab)._
+# Finally, we'll check blob storage for our article image. It should have the same name as the `image_filename` field above
+az storage blob list -c articleassets --connection-string "AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;DefaultEndpointsProtocol=http;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;QueueEndpoint=http://127.0.0.1:10001/devstoreaccount1;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;" --query "[].name"
+
+> [
+>   "02e30295-04bd-436b-b3ca-d0cc26b03cac.png"
+> ]
+```
+
+Yeah, we made it!!! :tada: :clap: :+1: :metal:
+
+Notes: If you checked out the project and ran it without changing any config in `settings.py`, then the above credentials for SQL Database and Blob Storage should work.
+
+#### References for the commands above.
+
+- [curl](https://curl.se/docs/manual.html)
+- [sqlcmd](https://docs.microsoft.com/en-us/sql/tools/sqlcmd-utility?view=sql-server-ver15#command-line-options)
+- [az storage blob](https://docs.microsoft.com/en-us/cli/azure/storage/blob?view=azure-cli-latest#az_storage_blob_list)
 
 ## Database Migrations
 

@@ -21,7 +21,7 @@ def create_config_only_app():
         raise EnvironmentError(f'Missing configurations: {missing_configs}')
 
     # Configure logging
-    logging.basicConfig(level=app.config['LOG_LVL'], 
+    logging.basicConfig(level=app.config['APP_LOG_LVL'], 
         format='[%(asctime)s] [%(levelname)-8s] %(name)s: %(message)s')
 
     return app
@@ -29,6 +29,8 @@ def create_config_only_app():
 
 def create_app():
     app = create_config_only_app()
+    logging.getLogger('azure').setLevel(app.config['AZURE_LOG_LVL'])
+    logging.getLogger('urllib3').setLevel(app.config['URLLIB_LOG_LVL'])
     
     services.db.init_app(app)
     services.blob_store.init_app(app)

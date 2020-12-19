@@ -1,5 +1,6 @@
 import os
 import urllib.parse
+import logging
 
 
 def _getbool_from_str(s):
@@ -25,7 +26,10 @@ class Config:
     """
     DEBUG = _getbool_from_str(os.environ.get('FLASK_DEBUG')) # defaults to False
     SECRET_KEY = os.environ.get('FLASK_SECRET_KEY')
-    LOG_LVL = os.environ.get('LOG_LVL')
+    
+    APP_LOG_LVL = os.environ.get('LOG_LVL')
+    URLLIB_LOG_LVL = logging.INFO
+    AZURE_LOG_LVL = logging.INFO
 
     CONTAINER_ARTICLE_ASSETS = "articleassets"
 
@@ -58,7 +62,9 @@ class DevelopmentConfig(Config):
     ENV = 'development'
     DEBUG = True
     SECRET_KEY = 'che3z!ts'
-    LOG_LVL = 'DEBUG'
+    APP_LOG_LVL = logging.DEBUG
+    URLLIB_LOG_LVL = logging.WARN
+    AZURE_LOG_LVL = logging.WARN
 
     BLOB_STORE_URI = 'http://127.0.0.1:10000/devstoreaccount1'
     BLOB_STORE_CREDENTIAL = 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=='
