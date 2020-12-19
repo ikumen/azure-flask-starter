@@ -43,7 +43,7 @@ def route(*args, required_params=None, **kwargs):
             if isinstance(resp, tuple):
                 resp = resp[0]
                 status = resp[1]
-            return jsonify(dict(data=resp)), status
+            return jsonify(resp), status
         return f
     return decorator
 
