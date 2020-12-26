@@ -15,14 +15,21 @@ The localized versions of the Azure services are functionally equivalent, not ex
 
 ## Quick Start
 
-You should have: [Python 3.7 or later](https://www.python.org/downloads/), [pyenv](https://github.com/pyenv/pyenv), [Docker](https://docs.docker.com/get-docker/), and an IDE would be helpful ([Visual Studio Code is nice](https://code.visualstudio.com/)).
+You should have the following installed:
+
+- [Python 3.7 or later](https://www.python.org/downloads/)
+- [pyenv](https://github.com/pyenv/pyenv) (it's not needed, but makes life easier if you need to switch between Python versions)
+- [Docker](https://docs.docker.com/get-docker/)
+- [sqlcmd](https://docs.microsoft.com/en-us/sql/tools/sqlcmd-utility?view=sql-server-ver15)
+- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+- and an IDE would be helpful ([Visual Studio Code is nice](https://code.visualstudio.com/)).
 
 ### Start SQL Database and Blob Storage
 
 ```bash
 # Checkout the project and navigate to it
-git clone git@github.com:ikumen/flask-azure-starter.git 
-cd flask-azure-starter
+git clone git@github.com:ikumen/azure-flask-starter.git
+cd azure-flask-starter
 
 # Start up the local SQL Server and Blob Storage
 # May take from a 1-5mins depending on your connection
@@ -34,7 +41,7 @@ docker-compose up
 Open a second terminal and navigate to the project root.
 
 ```bash
-cd /path/to/flask-azure-starter
+cd /path/to/azure-flask-starter
 
 # Setup Python, virtual environment, and install dependencies
 echo "3.9.1" > .python-version
@@ -115,7 +122,7 @@ curl -i localhost:5000/api/users \
 # Awesome, let's add an article
 curl -i localhost:5000/api/articles \
 -F title="Getting started with Azure and Flask" \
--F user_id=1 -F image=@/path/to/image.jpg
+-F user_id=1 -F image=@/path/to/image.png
 
 > HTTP/1.1 100 Continue
 > 
@@ -126,17 +133,17 @@ curl -i localhost:5000/api/articles \
 > ...
 > 
 > {
->   "content": null, 
+>   "content": "Lets do it", 
 >   "created_at": "Sat, 11 Dec 2020 12:03:25 GMT", 
 >   "id": 1, 
 >   "image_filename": "02e30295-04bd-436b-b3ca-d0cc26b03cac.png", 
 >   "title": "Getting started with Azure and Flask", 
 >   "user_id": 1
 > }
-
-# Great, we were able to add an article for our user and 
-# the associated image was saved to our blob storage. 
+# Note: the image will be given a randomly generated name instead of what you uploaded
 ```
+
+Great, we were able to add an article for our user and the associated image was saved to our blob storage. 
 
 ### Verify the data was saved to SQL Server and Blob Storage
 
@@ -158,9 +165,9 @@ sqlcmd -S localhost -U SA -P saPassw0rd -d localdb \
  -Q "select id, user_id, image_filename, title from articles" \
  -y 4 -Y 40
 
-> id  user_id  image_filename                           title                                   
-> --- -------- ---------------------------------------- --------------------------
->   1        1 02e30295-04bd-436b-b3ca-d0cc26b03cac.png Getting started with Az..
+> id  user_id  image_filename                           title                      content             
+> --- -------- ---------------------------------------- -------------------------- --------
+>   1        1 02e30295-04bd-436b-b3ca-d0cc26b03cac.png Getting started with Az..  Lets do it
 
 > (1 rows affected)
 
@@ -189,14 +196,15 @@ Notes: If you checked out the project and ran it without changing any config in 
 
 Database schema creation and migrations are all handled by [SQLAlchemy](https://www.sqlalchemy.org/) and [Alembic](https://alembic.sqlalchemy.org/en/latest/). We use SQLAlchemy to abstract away the [low level database driver](https://pypi.org/project/pyodbc/) and help map our database schema to our models. Alembic is the tool that detects model changes and migrates them to our database schema. The workflow goes something like this:
 
-1. initially we initialize the Alembic working directory `alembic`
+1. initialize the Alembic working directory `alembic` (performed once at start of project). _Note: we've gone ahead and provided an `alembic` directory for the starter, so you can skip this_
 1. start on the application side, and design your models and their relationships
-1. when you're ready to test out the models against the database, use Alembic to detect the models, generate the schema
-1. then use Alembic to apply the schema to the database, start up your app and test
-1. repeat steps 2-4 as you develop and evolve your models, Alembic keeps track of all the changes your schema goes through as it evolves from the changes you make to your models.
-1. finally everything in the `alembic` folder gets checked into source control, anyone that checks out the project can automatically migrate their local database to our latest schema
+1. when you're ready to test out the models against the database, use Alembic to detect the models and generate the corresponding schema updates
+1. then use Alembic to apply the schema updates to the database
+1. start up your app and test against the new model and database schema
+1. repeat steps 2-5 as you develop and evolve your models, Alembic keeps track of all the changes your schema goes through as it evolves from the changes you make to your models.
+1. finally everything in the `alembic` folder gets checked into source control&mdash;anyone that checks out the project can now migrate our latest schema changes to their local database
 
-`manage.py` contains the hooks that tie your application models to Alembic, and exposes Alembic migration operations with a command line interface.
+To make working with Alembic easier, we've added `manage.py`. It contains the hooks that tie your application models to Alembic, and exposes Alembic migration operations with a command line interface.
 
 ```bash
 # This would normally be run just once at the start of the project
@@ -212,8 +220,21 @@ Database schema creation and migrations are all handled by [SQLAlchemy](https://
 (.venv) python manage.py db upgrade
 ```
 
+`manage.py` uses the application config properties to connect to the same database instance the application does.
+
 ## Testing
 
 ```bash
 (.venv) python -m unittest discover -p "*_tests.py"
 ```
+
+## TODOs
+
+- additional documentation
+  - how to deploy to Azure
+  - how config works
+  - how Docker works and is being used
+  - how models are encapsulated through the services
+- add login component
+- add demo frontend
+  - React
