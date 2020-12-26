@@ -231,10 +231,9 @@ To make working with Alembic easier, we've added `manage.py`. It contains the ho
 ## TODOs
 
 - additional documentation
-  - how to deploy to Azure
-  - how config works
+  - [how to deploy to Azure](https://github.com/ikumen/azure-flask-starter/issues/9)
+  - [how config works](https://github.com/ikumen/azure-flask-starter/issues/10)
   - how Docker works and is being used
   - how models are encapsulated through the services
-- add login component
-- add demo frontend
-  - React
+- [add login component](https://github.com/ikumen/azure-flask-starter/issues/12)
+- [add demo frontend])(https://github.com/ikumen/azure-flask-starter/issues/11)
