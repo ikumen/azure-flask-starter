@@ -1,5 +1,4 @@
 import os
-import urllib.parse
 import logging
 
 
@@ -21,8 +20,6 @@ def get_configs():
 class Config:
     """Application wide configurations. Unless explicitly set, each configuration 
     is pull from environment variables.
-
-    Use the helper function `init_app` to initialize this Object into a Flask app.
     """
     DEBUG = _getbool_from_str(os.environ.get('FLASK_DEBUG')) # defaults to False
     SECRET_KEY = os.environ.get('FLASK_SECRET_KEY')
@@ -46,14 +43,15 @@ class Config:
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    @property
-    def DB_ODBC_URI(self):
-        return f'DRIVER={self.DB_DRIVER};SERVER={self.DB_SERVER_HOST};PORT={self.DB_SERVER_PORT};DATABASE={self.DB_DATABASE};UID={self.DB_USERNAME};PWD={self.DB_PASSWORD}'
+    # Moved to app.py/create_config_only_app, when DB_* properties are 
+    # being overwritten by local file, this breaks
+    # @property
+    # def DB_ODBC_URI(self):
+    #     return f'DRIVER={self.DB_DRIVER};SERVER={self.DB_SERVER_HOST};PORT={self.DB_SERVER_PORT};DATABASE={self.DB_DATABASE};UID={self.DB_USERNAME};PWD={self.DB_PASSWORD}'
 
-    @property
-    def SQLALCHEMY_DATABASE_URI(self):
-        #return f'mssql+pyodbc://{self.DB_USERNAME}:{self.DB_PASSWORD}@{self.DB_SERVER_HOST}:{self.DB_SERVER_PORT}/{self.DB_DATABASE}?driver={self.DB_DRIVER}'
-        return f'mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(self.DB_ODBC_URI)}'
+    # @property
+    # def SQLALCHEMY_DATABASE_URI(self):
+    #     return f'mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(self.DB_ODBC_URI)}'
 
 
 class DevelopmentConfig(Config):
