@@ -24,7 +24,7 @@ def parse_params(required_params):
     return (params, missing_params)
 
 
-def route(*args, required_params=None, **kwargs):
+def route(*args, required_params=[], **kwargs):
     """Hacky helper to parse/validate params and jsonify response."""
     def decorator(f):
         @bp.route(*args, **kwargs)
@@ -74,6 +74,11 @@ def list_users():
 @route('/users', methods=['post'], required_params=['name', 'email'])
 def create_user(params):
     user = user_service.create(**params)
+    return user.as_dict()
+
+@route('/users/<id>', methods=['put'])
+def update_user(id, params):
+    user = user_service.update(id=id, **params)
     return user.as_dict()
 
 @route('/users/<id>', methods=['delete'])

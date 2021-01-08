@@ -1,6 +1,6 @@
 import logging
 
-from backend.datastores import db, blob_store
+from backend.datastores import blob_store
 from backend.models import User, Article
 
 log = logging.getLogger(__name__)
@@ -15,35 +15,29 @@ class Service:
     def init_app(self, app):
         pass
 
-    def all(self):
-        return self._model_.query.all()
+    def _before_update(self, kwargs):
+        return kwargs
 
-    def _save(self, model):
-        db.session.add(model)
-        db.session.commit()
-        return model
+    def all(self):
+        return self._model_.all()
 
     def create(self, **kwargs):
-        model = self._model_(**kwargs)
-        return self._save(model)
+        return self._model_.create(**kwargs)
 
     def delete(self, id):
-        model = self._model_.query.get(id)
-        db.session.delete(model)
-        db.session.commit()
-        return model
+        return self._model_.delete(id)
 
     def update(self, model=None, id=None, **kwargs):
         if id is None and model is None:
             raise ValueError('Nothing to update, no model or id given')
         if model is None:
-            model = self._model_.query.get(id)
+            model = self.get(id)
         for k, v in self._before_update(kwargs).items():
             setattr(model, k, v)
-        return self._save(model)
+        return self._model_.save(model)
 
     def get(self, id):
-        return self._model_.query.get(id)
+        return self._model_.get(id)
 
 
 class UserService(Service):

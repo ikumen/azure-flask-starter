@@ -1,5 +1,5 @@
 from datetime import datetime
-from backend.services import db
+from backend.datastores import db
 
 class ModelMixin:
     @classmethod
@@ -7,21 +7,30 @@ class ModelMixin:
         return kwargs
         
     @classmethod
-    def create(cls, **kwargs):
-        model = cls(**cls._process_params(kwargs))
+    def save(cls, model):
         db.session.add(model)
         db.session.commit()
-        return model.as_dict()
+        return model
+
+    @classmethod
+    def create(cls, **kwargs):
+        model = cls(**cls._process_params(kwargs))
+        return cls.save(model)
 
     @classmethod
     def all(cls):
-        return [model.as_dict() for model in cls.query.all()]
+        return [model for model in cls.query.all()]
 
     @classmethod
     def delete(cls, id):
         model = cls.query.get(id)
         db.session.delete(model)
         db.session.commit()
+        return model
+
+    @classmethod
+    def get(cls, id):
+        return cls.query.get(id)
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
