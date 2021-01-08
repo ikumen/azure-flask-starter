@@ -216,4 +216,13 @@ Database schema creation and migrations are all handled by [SQLAlchemy](https://
 
 ```bash
 (.venv) python -m unittest discover -p "*_tests.py"
-```
+
+## TODOs
+
+- [ ] additional documentation
+  - [ ] [how to deploy to Azure](https://github.com/ikumen/azure-flask-starter/issues/9)
+  - [ ] [how config works](https://github.com/ikumen/azure-flask-starter/issues/10)
+  - [ ] how Docker works and is being used
+  - [ ] how models are encapsulated through the services
+- [ ] [add login component](https://github.com/ikumen/azure-flask-starter/issues/12)
+- [ ] [add demo frontend](https://github.com/ikumen/azure-flask-starter/issues/11)
